@@ -1,62 +1,50 @@
 *Concepts you may want to Google beforehand: assembler, BIOS*
 
-**Goal: Create a file which the BIOS interprets as a bootable disk**
+**目标：创建BIOS将其解释为可引导磁盘的文件**
 
-This is very exciting, we're going to create our own boot sector!
+这非常令人兴奋，我们将创建自己的引导扇区！
 
-Theory
+理论
 ------
 
-When the computer boots, the BIOS doesn't know how to load the OS, so it
-delegates that task to the boot sector. Thus, the boot sector must be
-placed in a known, standard location. That location is the first sector
-of the disk (cylinder 0, head 0, sector 0) and it takes 512 bytes.
+当计算机启动时，BIOS不知道如何加载操作系统，所以它将该任务委托给引导扇区。 因此，引导扇区必须是放置在一个已知的标准位置。 该位置是第一个部门磁盘（柱面0，磁头0，扇区0），它需要512个字节。为了确保“磁盘可引导”，BIOS检查该字节所谓的引导扇区的511和512是字节`0xAA55`。
 
-To make sure that the "disk is bootable", the BIOS checks that bytes
-511 and 512 of the alleged boot sector are bytes `0xAA55`.
-
-This is the simplest boot sector ever:
+这是有史以来最简单的引导扇区:
 
 ```
 e9 fd ff 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-[ 29 more lines with sixteen zero-bytes each ]
+[ 另外29行，每行16个零字节 ]
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 55 aa
 ```
 
-It is basically all zeros, ending with the 16-bit value
-`0xAA55` (beware of endianness, x86 is little-endian). 
-The first three bytes perform an infinite jump
+它基本上都是零，以16进制值结束`0xAA55`（注意字节序，x86是小端字节序）。前三个字节执行无限跳转
 
-Simplest boot sector ever
+最简单的引导扇区
 -------------------------
 
-You can either write the above 512 bytes
-with a binary editor, or just write a very
-simple assembler code:
+你可以用二进制编辑器写上面的512个字节，或者只写一个简单的汇编程序代码：
 
 ```nasm
-; Infinite loop (e9 fd ff)
+; 无限循环 (e9 fd ff)
 loop:
     jmp loop 
 
-; Fill with 510 zeros minus the size of the previous code
+; 填充510个`0`减去前一代码的大小
 times 510-($-$$) db 0
 ; Magic number
 dw 0xaa55 
 ```
 
-To compile:
+编译:
 `nasm -f bin boot_sect_simple.asm -o boot_sect_simple.bin`
 
-> OSX warning: if this drops an error, read chapter 00 again
+> OSX警告：如果出现错误，请再次阅读第00章
 
-I know you're anxious to try it out (I am!), so let's do it:
+我知道你急于尝试（我是！），所以让我们这样做:
 
 `qemu boot_sect_simple.bin`
 
-> On some systems, you may have to run `qemu-system-x86_64 boot_sect_simple.bin` If this gives an SDL error, try passing the --nographic and/or --curses flag(s).
+> 在某些系统上，您可能必须运行`qemu-system-x86_64 boot_sect_simple.bin`如果这给出了SDL错误，请尝试传递`—nographic`或`—curses`标志。
 
-You will see a window open which says "Booting from Hard Disk..." and
-nothing else. When was the last time you were so excited to see an infinite
-loop? ;-)
+你会看到一个打开的窗口，上面写着“从硬盘启动…”，没有其他的。最后你会看到一个无线虚幻？;-)
