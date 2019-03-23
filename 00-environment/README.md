@@ -10,4 +10,3 @@
 如果你安装了xcode，你不要使用xcode带的`nasm`，因为他大多数情况下不起作用。 使用brew安装的nasm，它在 `/usr/local/bin/nasm`
 
 在某些系统上，qemu被分成多个二进制文件. 你可能需要执行命令 `qemu-system-x86_64 binfile`
-
